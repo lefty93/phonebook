@@ -97,5 +97,12 @@ def delete_contact(id):
 
     return jsonify({"message": "Contact deleted successfully"})
 
+@app.route("/delete", methods=["DELETE"])
+def delete_all_contacts():
+    # Get all contact
+    Contacts.query.delete()
+    db.session.commit()
+    return "All contacts deleted successfully", 204
+
 if __name__ == "__main__":
     app.run(debug=True)
