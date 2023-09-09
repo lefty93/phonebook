@@ -1,9 +1,21 @@
 import { useState } from "react"
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AddContactPage = () => {
     const [newContact, setNewContact] = useState({ name: '', number: '' })
+    const [error, setError] = useState(null);
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Check if both name and number are not empty
+        if (!newContact.name.trim() || !newContact.number.trim()) {
+            setError('Both Name and Tel no. are required.');
+            return;
+        }
+
+        // Reset error state
+        setError(null);
 
         fetch("http://127.0.0.1:5000/add", {
             method: 'POST',
@@ -21,10 +33,9 @@ const AddContactPage = () => {
                 }
             })
             .catch(error => console.error('Error adding:', error))
+        toast(newContact.name + "'s contact is added");
 
     }
-
-
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -41,9 +52,11 @@ const AddContactPage = () => {
                         value={newContact.name} onChange={handleInputChange} />
                     <label className="text-[18px]">Tel no.</label>
                     <input type="number" className="w-full p-1 my-2 border box-border focus:outline-none focus:ring focus:border-blue-500" name="number" value={newContact.number} onChange={handleInputChange} />
+                    {error && <p className="text-red-500">{error}</p>}
                     <button type="submit" className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full border border-blue-700 mt-4">Add</button>
                 </form>
             </div>
+            <ToastContainer />
         </div>
     )
 }

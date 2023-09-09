@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react"
 import { AiFillSave, AiFillCloseCircle, AiFillEdit, AiFillDelete } from "react-icons/ai";
-import Modal from "./Modal";
 
 const PhoneList = () => {
   const [contacts, setContacts] = useState([]);
   const [editContact, setEditContact] = useState(null);
   const [editedContact, setEditedContact] = useState({ name: '', number: '' })
-
-  // State for controlling the confirmation dialog
-  const [isDeleteDialog, setIsDeleteDialog] = useState(false) 
 
   // GET METHOD TO RETRIEVE CONTACT FROM DATABASE
   useEffect(() => {
@@ -23,28 +19,28 @@ const PhoneList = () => {
       .catch(error => console.log(error))
   }, [])
 
-  const handleDeleteDialog = () => {
-    console.log('cccc')
-    setIsDeleteDialog(true);
-  }
-
   const handleDelete = (contactId) => {
-    // Make API request to delete contact by contactId
-    fetch(`http://127.0.0.1:5000/delete/${contactId}`, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    }).then(resp => {
-      if (resp.ok) {
-        // if the deletion was successful, update the contacts state
-        setContacts(prevContacts => prevContacts.filter(contact => contact.id !== contactId))
-      } else {
-        console.error("Failed to delete contact")
-      }
-    })
-      .catch(error => console.error('Error delete contact:', error))
-    setIsDeleteDialog(false)
+    const confirmDelete = window.confirm("Are you sure you want to delete this contact?");
+    if (confirmDelete) {
+      // Make API request to delete contact by contactId
+      fetch(`http://127.0.0.1:5000/delete/${contactId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      }).then(resp => {
+        if (resp.ok) {
+          // if the deletion was successful, update the contacts state
+          setContacts(prevContacts => prevContacts.filter(contact => contact.id !== contactId))
+        } else {
+          console.error("Failed to delete contact")
+        }
+      })
+        .catch(error => console.error('Error delete contact:', error))
+    } else {
+      console.log("Deletion cancelled by user");
+    }
+    
   }
 
   // PUT METHOD TO EDIT DATA
@@ -95,8 +91,8 @@ const PhoneList = () => {
 
   return (
     <>
-      <div className="flex justify-center h-[44vh] overflow-y-scroll">
-        <table className="w-full">
+      <div className="flex justify-center h-[50vh] overflow-y-scroll">
+        <table className="w-full h-[25%]">
           <thead className="bg-[#DDDDDD] sticky top-0">
             <tr className="text-gray-600 uppercase text-sm leading-normal">
               <th className="py-2 px-1 md:px-2 w-1/3">Name</th>
@@ -118,12 +114,11 @@ const PhoneList = () => {
                       onClick={() => handleEdit(contact.id)}><AiFillEdit /></button>
                     <button
                       className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out"
-                      onClick={() => handleDeleteDialog()}
+                      onClick={() => handleDelete(contact.id)}
                     ><AiFillDelete /></button></td>
                 </tr>
               )
             })}
-
           </tbody>
           
         </table>
@@ -159,20 +154,6 @@ const PhoneList = () => {
               className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out" title="Close"><AiFillCloseCircle /></button>
           </div>
           </>
-      )}
-
-      {/* Render delete confirm dialog */}
-      {isDeleteDialog && (
-        <div>
-          <Modal
-            isOpen={isDeleteDialog}
-            onConfirm={() => {
-              handleDelete(editContact.id); // Call handleDelete when the user confirms deletion
-              setIsDeleteDialog(false); // Close the delete confirmation dialog
-            }}
-            onCancel={() => setIsDeleteDialog(false)}
-          />
-        </div>
       )}
     </>
   )
